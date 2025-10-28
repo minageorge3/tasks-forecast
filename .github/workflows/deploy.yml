@@ -4,7 +4,7 @@ name: Deploy Vite Project to Pages
 on:
   # Runs on pushes to the main branch
   push:
-    branches: [ main ] # Or 'master' if that's your default branch
+    branches: [ master ] # Or 'master' if that's your default branch
   
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
