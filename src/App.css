@@ -1,0 +1,77 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 1rem;
+  text-align: center;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+
+.actionBtns {
+  transition: all 0.3s !important;
+}
+.actionBtns:hover {
+  background-color: #b9b9b9 !important;
+  box-shadow: 0 0 7px rgba(182, 0, 0, 0.451);
+}
+.todoCard {
+  transition: all 0.2s ease !important;
+}
+
+.todoCard:hover {
+  padding-bottom: 0.1rem !important;
+  padding-top: 0.1rem !important;
+  /* box-shadow: 0 0 7px rgba(182, 0, 0, 0.451); */
+  /* background-color: rgb(134, 134, 134); */
+}
+@font-face {
+  font-family: myfont;
+  src: url(/public/font/BricolageGrotesque-ExtraBold.ttf);
+  font-weight: 900;
+}
+@font-face {
+  font-family: myfont;
+  src: url(/public/font/BricolageGrotesque-Bold.ttf);
+  font-weight: 700;
+}
+@font-face {
+  font-family: myfont;
+  src: url(/public/font/BricolageGrotesque-Medium.ttf);
+  font-weight: 500;
+}
+@font-face {
+  font-family: myfont;
+  src: url(/public/font/BricolageGrotesque-Light.ttf);
+  font-weight: 200;
+}
