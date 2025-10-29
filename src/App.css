@@ -1,7 +1,6 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 1rem;
   text-align: center;
 }
 
@@ -52,8 +51,6 @@
 .todoCard:hover {
   padding-bottom: 0.1rem !important;
   padding-top: 0.1rem !important;
-  /* box-shadow: 0 0 7px rgba(182, 0, 0, 0.451); */
-  /* background-color: rgb(134, 134, 134); */
 }
 @font-face {
   font-family: myfont;

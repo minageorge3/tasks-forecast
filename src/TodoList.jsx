@@ -95,14 +95,21 @@ export default function TodoList() {
   const notCompletedTodo = todo.filter((t) => {
     return !t.isCompleted;
   });
-  let renderedTodo = todo;
+
+  let baseList = todo;
+
   if (displayTodoType === "Completed") {
-    renderedTodo = completedTodo;
+    baseList = completedTodo;
   } else if (displayTodoType === "Non-Completed") {
-    renderedTodo = notCompletedTodo;
-  } else {
-    renderedTodo = todo;
+    baseList = notCompletedTodo;
   }
+  let renderedTodo = baseList;
+  if (displayTodoType === "all") {
+    renderedTodo = [...baseList].sort((a, b) => {
+      return a.isCompleted - b.isCompleted;
+    });
+  }
+  // --- End NEW Logic ---
   function changeDisplaytodoType(e) {
     setDisplayTodoType(e.target.value);
   }
@@ -133,27 +140,17 @@ export default function TodoList() {
   }
   // handle submit >>>>>>>>>>>>
   // slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
   const handleSendMessage = () => {
-    // 1. Check if the required fields are filled
     if (!subjectInput.trim() || !messageInput.trim()) {
       showNotification("error", "Subject and message are required.");
       return;
     }
-
-    // 2. Encode the subject and body for the mailto link
     const subject = encodeURIComponent(subjectInput.trim());
     const body = encodeURIComponent(
       `Message from TodoList user:\n\n${messageInput.trim()}`
     );
-
-    // 3. Construct the mailto link (replace 'YOUR_EMAIL_ADDRESS' with your actual email)
     const mailtoLink = `mailto:white_lion_mina@yahoo.com?subject=${subject}&body=${body}`;
-
-    // 4. Open the user's default email client
     window.location.href = mailtoLink;
-
-    // 5. Provide feedback and clear inputs
     showNotification("info", "Opening your mail client to send the message.");
     setSubjectInput("");
     setMessageInput("");
@@ -164,7 +161,7 @@ export default function TodoList() {
     <Box
       sx={{
         width: "100%",
-        padding: 3,
+        padding: 1,
         textAlign: "center",
       }}
       role="presentation"
@@ -182,7 +179,6 @@ export default function TodoList() {
       >
         <CloseIcon />
       </IconButton>
-
       {/* choose a color ????????????????????????????????????????? */}
       <Typography variant="body2" color="text.secondary" sx={{ mt: 1, mb: 1 }}>
         Select Todo Background Color:
@@ -270,7 +266,6 @@ export default function TodoList() {
           }}
         />
       </Box>
-
       {/* choose a color ????????????????????????????????????????? */}
       <Box
         sx={{
@@ -294,8 +289,6 @@ export default function TodoList() {
           value={subjectInput}
           onChange={(e) => setSubjectInput(e.target.value)}
         />
-
-        {/* Message Input (will auto-adjust height) */}
         <TextField
           fullWidth
           label="Your Message"
@@ -306,7 +299,6 @@ export default function TodoList() {
           value={messageInput}
           onChange={(e) => setMessageInput(e.target.value)}
         />
-
         {/* Send Button */}
         <Button
           variant="contained"
@@ -345,7 +337,8 @@ export default function TodoList() {
         className="scroll"
         sx={{
           height: "90vh",
-          overflow: "auto",
+          overflowY: "auto",
+          overflowX: "hidden",
           scrollBehavior: "smooth",
           position: "relative",
           width: "100%",
@@ -365,21 +358,26 @@ export default function TodoList() {
 
           {/* The MUI Drawer component */}
           <Drawer
-            anchor="top" // Slides from the top
-            open={isMenuOpen} // Controlled by the state from Step 1
-            onClose={toggleDrawer(false)} // Closes when clicking outside
+            anchor="left"
+            open={isMenuOpen}
+            onClose={toggleDrawer(false)}
+            transitionDuration={800}
             slotProps={{
               paper: {
                 sx: {
-                  maxHeight: "100%",
                   overflow: "auto",
                   width: "100%",
+                  mb: { xs: 2, sm: 0 },
                 },
               },
             }}
           >
             <Card
-              sx={{ backgroundColor: "#f5f5f588", p: 1, minHeight: "35px" }}
+              sx={{
+                backgroundColor: "#1a72de1a",
+                p: 1,
+                minHeight: { xs: "110px", md: "auto" },
+              }}
             >
               <Grid
                 container
@@ -387,6 +385,8 @@ export default function TodoList() {
                 sx={{
                   alignItems: "center",
                   justifyContent: "center",
+                  flexDirection: { xs: "column", md: "row" },
+                  gap: { xs: "8px", md: "8px" },
                 }}
               >
                 <Grid item xs={12} md={3}>
@@ -394,11 +394,10 @@ export default function TodoList() {
                     variant="body1"
                     sx={{ textAlign: { xs: "center", md: "right" } }}
                   >
-                    Welcome, {yourname}
+                    Welcome,
                   </Typography>
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  {/* ⭐ Use TextField instead of Input for better scaling: */}
                   <TextField
                     placeholder="Type your name…"
                     variant="outlined"
@@ -417,10 +416,7 @@ export default function TodoList() {
                     color="primary"
                     size="small"
                     onClick={handleSaveName}
-                    sx={{
-                      width: "100%",
-                      mt: { xs: 1, md: 0 },
-                    }}
+                    fullWidth
                   >
                     Save
                   </Button>

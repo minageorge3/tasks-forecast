@@ -18,7 +18,7 @@ import DialogTitle from "@mui/material/DialogTitle";
 import TextField from "@mui/material/TextField";
 
 // alert popup
-export default function Todo({ todos, showNotification,todoBgColor }) {
+export default function Todo({ todos, showNotification, todoBgColor }) {
   const { todo, setTodo } = useContext(TodoContext);
   // dialogs appearing
   const [deleteDialog, setDeleteDialog] = useState(false);
@@ -184,10 +184,12 @@ export default function Todo({ todos, showNotification,todoBgColor }) {
         className="todoCard"
         sx={{
           minWidth: 275,
-          backgroundColor: todoBgColor,
           margin: ".5rem",
           borderRadius: ".5rem",
           boxShadow: "0 0 5px #13a6eaff",
+          backgroundColor: todos.isCompleted ? "#a1a1a1ff" : todoBgColor,
+
+          opacity: todos.isCompleted ? 0.8 : 1,
         }}
       >
         <CardContent>
