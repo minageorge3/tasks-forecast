@@ -10,14 +10,20 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Todo from "./Todo";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { v4 as uuidv4 } from "uuid";
-import { useState, useContext, useEffect } from "react";
-import { TodoContext } from "./context/TodoContext";
+import { useState,  useEffect, useMemo } from "react";
 import NoteAltIcon from "@mui/icons-material/NoteAlt";
 import UpButton from "./upButton";
 import Notification from "./notifications";
 import { Drawer, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+// alert popup
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
+import { useTodo } from "./context/TodoContext";
+// alert popup
 export default function TodoList() {
   const [yourname, setyourname] = useState(() => {
     // Loads from storage, defaults to "Guest" if nothing is saved or the saved value is empty
@@ -29,7 +35,9 @@ export default function TodoList() {
   const [displayTodoType, setDisplayTodoType] = useState("all");
   const [taskInput, setTaskInput] = useState("");
   const [detailsInput, setdetailsInput] = useState("");
-  const { todo, setTodo } = useContext(TodoContext);
+  // const { todo1, setTodo } = useContext(TodoContext);
+  // const [todo, dispatch] = useReducer(Reducer, []);
+  const {todo, dispatch} = useTodo();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [subjectInput, setSubjectInput] = useState("");
   const [messageInput, setMessageInput] = useState("");
@@ -41,9 +49,10 @@ export default function TodoList() {
     setIsMenuOpen(newOpen);
   };
   useEffect(() => {
-    const storageTodos = JSON.parse(localStorage.getItem("todos")) || [];
-    setTodo(storageTodos);
-
+    dispatch({
+      type: "getfromlocalstorage",
+    });
+    
     const savedColor = localStorage.getItem("todoBgColor");
     if (savedColor) {
       setSelectedColor(savedColor);
@@ -89,12 +98,17 @@ export default function TodoList() {
   };
   // added notification +++++++++++++++++
   // todo filtering::::::::::::::::::::::
-  const completedTodo = todo.filter((t) => {
-    return t.isCompleted;
-  });
-  const notCompletedTodo = todo.filter((t) => {
-    return !t.isCompleted;
-  });
+
+  const completedTodo = useMemo(() => {
+    return todo.filter((t) => {
+      return t.isCompleted;
+    });
+  }, [todo]);
+  const notCompletedTodo = useMemo(() => {
+    return todo.filter((t) => {
+      return !t.isCompleted;
+    });
+  }, [todo]);
 
   let baseList = todo;
 
@@ -121,20 +135,17 @@ export default function TodoList() {
         todos={t}
         showNotification={showNotification}
         todoBgColor={selectedColor}
+        HandleDeleteOpen={HandleDeleteOpen}
+        HandleEditOpen={HandleEditOpen}
       />
     );
   });
   // handle submit >>>>>>>>>>>>
   function addTask() {
-    const newTodo = {
-      title: taskInput,
-      id: uuidv4(),
-      details: detailsInput,
-      isCompleted: false,
-    };
-    const theUpdatedTodo = [...todo, newTodo];
-    setTodo(theUpdatedTodo);
-    localStorage.setItem("todos", JSON.stringify(theUpdatedTodo));
+    dispatch({
+      type: "added",
+      payload: { title: taskInput, details: detailsInput },
+    });
     setTaskInput("");
     setdetailsInput("");
   }
@@ -156,11 +167,67 @@ export default function TodoList() {
     setMessageInput("");
     setIsMenuOpen(false);
   };
-
+  // dialogs appearing
+  const [toOpenDialogs, setToOpenDialogs] = useState({
+    id: null,
+    title: "",
+    details: "",
+  });
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [editDialog, setEditDialog] = useState(false);
+  // dialogs appearing
+  // edit handling
+  // edit handling
+  // Delete functions <><><><><><><><><>
+  function HandleDeleteOpen(todos) {
+    setToOpenDialogs(todos);
+    setDeleteDialog(true);
+  }
+  function handleDeleteClose() {
+    setDeleteDialog(false);
+  }
+  function handleDelete() {
+    dispatch({
+      type: "deleted",
+      payload: toOpenDialogs,
+    });
+    showNotification("error", "Task deleted successfully");
+    setDeleteDialog(false);
+  }
+  const handleKeyDownToDelete = (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleDelete();
+    }
+  };
+  // Delete functions <><><><><><><><><><><><
+  // edit functions >>>>>>>>>>
+  function HandleEditOpen(todos) {
+    setToOpenDialogs(todos);
+    setEditDialog(true);
+  }
+  function handleEditClose() {
+    setEditDialog(false);
+  }
+  function handleEdit() {
+    dispatch({
+      type: "edited",
+      payload: toOpenDialogs,
+    });
+    setEditDialog(false);
+    showNotification("warning", "Task updated successfully");
+  }
+  function handleKeyDownToEdit(e) {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleEdit();
+    }
+  }
+  // edit functions >>>>>>>>>>
   const menuContent = (
     <Box
       sx={{
-        width: "100%",
+        // width: "100%",
         padding: 1,
         textAlign: "center",
       }}
@@ -326,197 +393,288 @@ export default function TodoList() {
   // slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
   return (
-    <Container
-      maxWidth="sm"
-      sx={{
-        overflowX: "hidden",
-        p: 0,
-      }}
-    >
-      <Card
-        className="scroll"
+    <>
+      {/* alert popup when click delete button !!!!!!!!!!!!!*/}
+
+      <Dialog
+        open={deleteDialog}
+        onClose={handleDeleteClose}
+        onKeyDown={handleKeyDownToDelete}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Are you sure to delete this task?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            you can't restore it
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleDeleteClose}>no, close</Button>
+          <Button onClick={handleDelete}>
+            <span style={{ color: "#da1f1fff" }}>yes, delete</span>
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* alert popup when click delete button !!!!!!!!!!!!!!*/}
+      {/* alert popup when click edit button !!!!edit edit edit edit*/}
+      <Dialog
+        open={editDialog}
+        onClose={handleEditClose}
+        onKeyDown={handleKeyDownToEdit}
+      >
+        <DialogTitle>Task Editing</DialogTitle>
+        <DialogContent>
+          <form>
+            <TextField
+              autoFocus
+              required
+              margin="dense"
+              id="name"
+              name="email"
+              label="Task Title"
+              fullWidth
+              variant="standard"
+              value={toOpenDialogs.title ?? ""}
+              onChange={(e) => {
+                setToOpenDialogs({ ...toOpenDialogs, title: e.target.value });
+              }}
+            />
+            <TextField
+              margin="dense"
+              id="name"
+              name="email"
+              label="Task Details"
+              fullWidth
+              variant="standard"
+              value={toOpenDialogs.details ?? ""}
+              onChange={(e) => {
+                setToOpenDialogs({ ...toOpenDialogs, details: e.target.value });
+              }}
+            />
+          </form>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleEditClose}>Cancel</Button>
+          <Button onClick={handleEdit}>
+            <span style={{ color: "#f2650dff" }}>Save</span>
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* alert popup when click edit button !!!!edit edit edit edit*/}
+      <Container
+        maxWidth="sm"
         sx={{
-          height: "90vh",
-          overflowY: "auto",
           overflowX: "hidden",
-          scrollBehavior: "smooth",
-          position: "relative",
-          width: "100%",
+          p: 0,
         }}
       >
-        {/* slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */}
-        <div>
-          {/* Button to OPEN the menu */}
-          <Button
-            onClick={toggleDrawer(true)}
-            variant="outlined"
-            color="secondary"
-            sx={{ m: 2, margin: ".5rem" }}
-          >
-            Open Menu
-          </Button>
-
-          {/* The MUI Drawer component */}
-          <Drawer
-            anchor="left"
-            open={isMenuOpen}
-            onClose={toggleDrawer(false)}
-            transitionDuration={800}
-            slotProps={{
-              paper: {
-                sx: {
-                  overflow: "auto",
-                  width: "100%",
-                  mb: { xs: 2, sm: 0 },
+        <Card
+          className="scroll"
+          sx={{
+            height: "90vh",
+            overflowY: "auto",
+            overflowX: "hidden",
+            scrollBehavior: "smooth",
+            position: "relative",
+            width: "100%",
+          }}
+        >
+          {/* slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */}
+          <div>
+            {/* Button to OPEN the menu */}
+            <Button
+              onClick={toggleDrawer(true)}
+              variant="outlined"
+              color="secondary"
+              sx={{ m: 2, margin: ".5rem" }}
+            >
+              Open Menu
+            </Button>
+            {/*  Drawer component */}
+            <Drawer
+              anchor="left"
+              open={isMenuOpen}
+              onClose={toggleDrawer(false)}
+              transitionDuration={800}
+              slotProps={{
+                paper: {
+                  sx: {
+                    overflow: "auto",
+                    // width: "100%",
+                    mb: { xs: 2, sm: 0 },
+                  },
                 },
-              },
-            }}
-          >
-            <Card
-              sx={{
-                backgroundColor: "#1a72de1a",
-                p: 1,
-                minHeight: { xs: "110px", md: "auto" },
               }}
             >
-              <Grid
-                container
-                spacing={1}
+              <Card
                 sx={{
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexDirection: { xs: "column", md: "row" },
-                  gap: { xs: "8px", md: "8px" },
+                  backgroundColor: "#1a72de1a",
+                  p: 1,
+                  minHeight: { xs: "110px", md: "auto" },
                 }}
               >
-                <Grid item xs={12} md={3}>
-                  <Typography
-                    variant="body1"
-                    sx={{ textAlign: { xs: "center", md: "right" } }}
-                  >
-                    Welcome,
-                  </Typography>
+                <Grid
+                  container
+                  spacing={1}
+                  sx={{
+                    alignItems: "center",
+                    justifyContent: "center",
+                    flexDirection: { xs: "column", md: "row" },
+                    gap: { xs: "8px", md: "8px" },
+                  }}
+                >
+                  <Grid>
+                    <Typography
+                      variant="body1"
+                      sx={{ textAlign: { xs: "center", md: "right" } }}
+                    >
+                      Welcome,
+                    </Typography>
+                  </Grid>
+                  <Grid>
+                    <TextField
+                      placeholder="Type your name…"
+                      variant="outlined"
+                      size="small"
+                      value={inputName ?? ""}
+                      onChange={(e) => setInputName(e.target.value)}
+                      fullWidth
+                      sx={{
+                        "& .MuiInputBase-input": { textAlign: "center" },
+                      }}
+                    />
+                  </Grid>
+                  <Grid>
+                    <Button
+                      variant="outlined"
+                      color="primary"
+                      size="small"
+                      onClick={handleSaveName}
+                      fullWidth
+                    >
+                      Save
+                    </Button>
+                  </Grid>
                 </Grid>
-                <Grid item xs={12} md={6}>
-                  <TextField
-                    placeholder="Type your name…"
-                    variant="outlined"
-                    size="small" // Use small size to save vertical space
-                    value={inputName}
-                    onChange={(e) => setInputName(e.target.value)}
-                    fullWidth
-                    sx={{
-                      "& .MuiInputBase-input": { textAlign: "center" },
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={3}>
-                  <Button
-                    variant="outlined"
-                    color="primary"
-                    size="small"
-                    onClick={handleSaveName}
-                    fullWidth
-                  >
-                    Save
-                  </Button>
-                </Grid>
-              </Grid>
-            </Card>
-            {menuContent}
-          </Drawer>
-        </div>
-        {/* slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */}
-        {/* added notification  ++++++++++++++++++++++++++++++++++ */}
-        <Notification
-          open={notification.open}
-          onClose={handleCloseNotification}
-          severity={notification.severity}
-          message={notification.message}
-        />
+              </Card>
+              {menuContent}
+            </Drawer>
+          </div>
+          {/* slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */}
+          {/* added notification  ++++++++++++++++++++++++++++++++++ */}
+          <Notification
+            open={notification.open}
+            onClose={handleCloseNotification}
+            severity={notification.severity}
+            message={notification.message}
+          />
 
-        {/* added notification  ++++++++++++++++++++++++++++++++++ */}
-        <Card sx={{ backgroundColor: "#0f50f615" }}>
-          <Grid
-            // container
-            spacing={1}
+          {/* added notification  ++++++++++++++++++++++++++++++++++ */}
+          <Card sx={{ backgroundColor: "#0f50f615" }}>
+            <Grid
+              // container
+              spacing={1}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "1rem",
+                height: "2rem",
+              }}
+            >
+              <Grid>
+                <p>Welcome, {inputName}</p>
+              </Grid>
+            </Grid>
+          </Card>
+          <CardContent
             style={{
+              padding: "0 2rem",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
-              gap: "1rem",
-              height: "2rem",
+              gap: ".5rem",
             }}
           >
-            <Grid item xs={12} md={4}>
-              <p>Welcome, {inputName}</p>
-            </Grid>
-          </Grid>
-        </Card>
-        <CardContent
-          style={{
-            padding: "0 2rem",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: ".5rem",
-          }}
-        >
-          <Typography
-            className="theheader"
-            gutterBottom
-            sx={{
-              fontWeight: "700",
-              marginTop: ".5rem",
-              fontFamily: "myfont",
-            }}
+            <Typography
+              className="theheader"
+              gutterBottom
+              sx={{
+                fontWeight: "700",
+                marginTop: ".5rem",
+                fontFamily: "myfont",
+              }}
+              color="primary"
+              variant="h6"
+            >
+              My ToDo List
+            </Typography>
+            <NoteAltIcon color="secondary" />
+          </CardContent>
+          <Divider />
+          {/* toogle button */}
+          <ToggleButtonGroup
+            exclusive
+            aria-label="text alignment"
+            style={{ margin: "1rem" }}
+            value={displayTodoType}
+            onChange={changeDisplaytodoType}
             color="primary"
-            variant="h6"
           >
-            My ToDo List
-          </Typography>
-          <NoteAltIcon color="secondary" />
-        </CardContent>
-        <Divider />
-        {/* toogle button */}
-        <ToggleButtonGroup
-          exclusive
-          aria-label="text alignment"
-          style={{ margin: "1rem" }}
-          value={displayTodoType}
-          onChange={changeDisplaytodoType}
-          color="primary"
-        >
-          <ToggleButton value="all" style={{ outline: "none" }}>
-            All
-          </ToggleButton>
-          <ToggleButton value="Completed" style={{ outline: "none" }}>
-            Completed
-          </ToggleButton>
-          <ToggleButton value="Non-Completed" style={{ outline: "none" }}>
-            Non Completed
-          </ToggleButton>
-        </ToggleButtonGroup>
-        {/* toogle button */}
-        {/* =====================the todo ==========*/}
-        {todos}
-        {/* <Todo /> */}
-        {/* =====================the todo ==========*/}
-        <Grid container spacing={2} sx={{ margin: " 1rem .5rem " }}>
-          <Grid size={12}>
-            <Box sx={{ mb: 2 }}>
+            <ToggleButton value="all" style={{ outline: "none" }}>
+              All
+            </ToggleButton>
+            <ToggleButton value="Completed" style={{ outline: "none" }}>
+              Completed
+            </ToggleButton>
+            <ToggleButton value="Non-Completed" style={{ outline: "none" }}>
+              Non Completed
+            </ToggleButton>
+          </ToggleButtonGroup>
+          {/* toogle button */}
+          {/* =====================the todo ==========*/}
+          {todos}
+          {/* <Todo /> */}
+          {/* =====================the todo ==========*/}
+          <Grid container spacing={2} sx={{ margin: " 1rem .5rem " }}>
+            <Grid size={12}>
+              <Box sx={{ mb: 2 }}>
+                <TextField
+                  id="outlined-basic"
+                  label="Task Name"
+                  required
+                  variant="outlined"
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                  }}
+                  value={taskInput}
+                  onChange={(e) => {
+                    setTaskInput(e.target.value);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      addTask();
+                      showNotification("success", "Task Added successfully");
+                    }
+                  }}
+                />
+              </Box>
+
               <TextField
                 id="outlined-basic"
-                label="Task Name"
-                required
+                label="Task Details"
                 variant="outlined"
                 style={{
                   width: "100%",
                   height: "100%",
                 }}
-                value={taskInput}
+                value={detailsInput}
                 onChange={(e) => {
-                  setTaskInput(e.target.value);
+                  setdetailsInput(e.target.value);
                 }}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") {
@@ -525,44 +683,24 @@ export default function TodoList() {
                   }
                 }}
               />
-            </Box>
-
-            <TextField
-              id="outlined-basic"
-              label="Task Details"
-              variant="outlined"
-              style={{
-                width: "100%",
-                height: "100%",
-              }}
-              value={detailsInput}
-              onChange={(e) => {
-                setdetailsInput(e.target.value);
-              }}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
+            </Grid>
+            <Grid size={12}>
+              <Button
+                variant="contained"
+                sx={{ width: "100%", height: "100%" }}
+                onClick={() => {
                   addTask();
                   showNotification("success", "Task Added successfully");
-                }
-              }}
-            />
+                }}
+                disabled={taskInput.length == 0}
+              >
+                add task
+              </Button>
+            </Grid>
           </Grid>
-          <Grid size={12}>
-            <Button
-              variant="contained"
-              sx={{ width: "100%", height: "100%" }}
-              onClick={() => {
-                addTask();
-                showNotification("success", "Task Added successfully");
-              }}
-              disabled={taskInput.length == 0}
-            >
-              add task
-            </Button>
-          </Grid>
-        </Grid>
-        <UpButton />
-      </Card>
-    </Container>
+          <UpButton />
+        </Card>
+      </Container>
+    </>
   );
 }

@@ -1,6 +1,5 @@
 import "./App.css";
-import { TodoContext } from "./context/TodoContext";
-import { useState } from "react";
+import   TodoProvider  from "./context/TodoContext";
 import TodoList from "./TodoList";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 
@@ -26,26 +25,26 @@ const theme = createTheme({
     },
   },
 });
-const initialTodo = [];
+// const initialTodo = [];
 function App() {
-  const [todo, setTodo] = useState(initialTodo);
+  // const [todo, setTodo] = useState(initialTodo);
 
   return (
     <ThemeProvider theme={theme}>
-      <TodoContext.Provider value={{ todo, setTodo }}>
-        <div
-          style={{
-            marginTop: "0",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            height: "100%",
-            width: "100vw",
-          }}
-        >
-          <TodoList />
-        </div>
-      </TodoContext.Provider>
+        <TodoProvider>
+          <div
+            style={{
+              marginTop: "0",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              height: "100%",
+              width: "100vw",
+            }}
+          >
+            <TodoList />
+          </div>
+        </TodoProvider>
     </ThemeProvider>
   );
 }

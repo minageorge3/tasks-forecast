@@ -1,5 +1,3 @@
-import { useContext, useState } from "react";
-import { TodoContext } from "./context/TodoContext";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
@@ -8,101 +6,30 @@ import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
 import CheckIcon from "@mui/icons-material/Check";
 import EditIcon from "@mui/icons-material/Edit";
-// alert popup
-import Button from "@mui/material/Button";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import TextField from "@mui/material/TextField";
+import { useTodo } from "./context/TodoContext";
 
-// alert popup
-export default function Todo({ todos, showNotification, todoBgColor }) {
-  const { todo, setTodo } = useContext(TodoContext);
-  // dialogs appearing
-  const [deleteDialog, setDeleteDialog] = useState(false);
-  const [editDialog, setEditDialog] = useState(false);
-  // dialogs appearing
-  // edit handling
-  const [editAndUpdate, setEditAndUpdate] = useState({
-    title: todos.title,
-    details: todos.details,
-  });
-  // edit handling
+export default function Todo({
+  todos,
+  showNotification,
+  todoBgColor,
+  HandleDeleteOpen,
+  HandleEditOpen,
+}) {
+  const { todo, dispatch } = useTodo();
+
   // event handlers functions++++++++++
   function handleCheck() {
-    let completedStatus = false; //1
-    const updatedTodo = todo.map((t) => {
-      if (t.id === todos.id) {
-        t.isCompleted = !t.isCompleted;
-        completedStatus = t.isCompleted; //2
-        showNotification("info", "Categories Updated successfully");
-      }
-      return t;
-    });
-    setTodo(updatedTodo);
-    localStorage.setItem("todos", JSON.stringify(updatedTodo));
-    // 3. Conditionally show the appropriate notification message
-    if (completedStatus) {
-      // Task is now complete (Added to "Done" list)
-      showNotification("success", "Task marked as done! 🎉");
-    } else {
-      // Task is now not complete (Removed from "Done" list)
-      showNotification("info", "Task  moved to pending. 🖊️");
-    }
+    dispatch({ type: "done", payload: { id: todos.id, showNotification } });
+    
   }
-
   // Delete functions <><><><><><><><><>
   function handleDeleteOpen() {
-    setDeleteDialog(true);
+    HandleDeleteOpen(todos);
   }
-  function handleDeleteClose() {
-    setDeleteDialog(false);
-  }
-  function handleDelete() {
-    showNotification("error", "Task deleted successfully");
-    const filterdTodo = todo.filter((t) => t.id !== todos.id);
-    setTodo(filterdTodo);
-    localStorage.setItem("todos", JSON.stringify(filterdTodo));
-    setDeleteDialog(false);
-  }
-  const handleKeyDownToDelete = (e) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleDelete();
-    }
-  };
   // Delete functions <><><><><><><><><><><><
   // edit functions >>>>>>>>>>
   function handleEditOpen() {
-    setEditDialog(true);
-  }
-  function handleEditClose() {
-    setEditDialog(false);
-  }
-  function handleEdit() {
-    const editedTodo = todo.map((t) => {
-      if (t.id === todos.id) {
-        return {
-          ...t,
-          title: editAndUpdate.title,
-          details: editAndUpdate.details,
-        };
-      } else {
-        return t;
-      }
-    });
-    setTodo(editedTodo);
-    setEditDialog(false);
-    localStorage.setItem("todos", JSON.stringify(editedTodo));
-    showNotification("warning", "Task updated successfully");
-  }
-  function handleKeyDownToEdit(e) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      handleEdit();
-    }
+    HandleEditOpen(todos);
   }
   // edit functions >>>>>>>>>>
   // event handlers functions++++++++++
@@ -110,76 +37,6 @@ export default function Todo({ todos, showNotification, todoBgColor }) {
 
   return (
     <>
-      {/* alert popup when click delete button !!!!!!!!!!!!!*/}
-
-      <Dialog
-        open={deleteDialog}
-        onClose={handleDeleteClose}
-        onKeyDown={handleKeyDownToDelete}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          Are you sure to delete this task?
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            you can't restore it
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDeleteClose}>no, close</Button>
-          <Button onClick={handleDelete}>
-            <span style={{ color: "#da1f1fff" }}>yes, delete</span>
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* alert popup when click delete button !!!!!!!!!!!!!!*/}
-      {/* alert popup when click edit button !!!!edit edit edit edit*/}
-      <Dialog
-        open={editDialog}
-        onClose={handleEditClose}
-        onKeyDown={handleKeyDownToEdit}
-      >
-        <DialogTitle>Task Editing</DialogTitle>
-        <DialogContent>
-          <form>
-            <TextField
-              autoFocus
-              required
-              margin="dense"
-              id="name"
-              name="email"
-              label="Task Title"
-              fullWidth
-              variant="standard"
-              value={editAndUpdate.title}
-              onChange={(e) => {
-                setEditAndUpdate({ ...editAndUpdate, title: e.target.value });
-              }}
-            />
-            <TextField
-              margin="dense"
-              id="name"
-              name="email"
-              label="Task Details"
-              fullWidth
-              variant="standard"
-              value={editAndUpdate.details}
-              onChange={(e) => {
-                setEditAndUpdate({ ...editAndUpdate, details: e.target.value });
-              }}
-            />
-          </form>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleEditClose}>Cancel</Button>
-          <Button onClick={handleEdit}>
-            <span style={{ color: "#f2650dff" }}>Save</span>
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* alert popup when click edit button !!!!edit edit edit edit*/}
       <Card
         className="todoCard"
         sx={{
@@ -187,8 +44,7 @@ export default function Todo({ todos, showNotification, todoBgColor }) {
           margin: ".5rem",
           borderRadius: ".5rem",
           boxShadow: "0 0 5px #13a6eaff",
-          backgroundColor: todos.isCompleted ? "#a1a1a1ff" : todoBgColor,
-
+          backgroundColor: todos.isCompleted ? "#000000ff" : todoBgColor,
           opacity: todos.isCompleted ? 0.8 : 1,
         }}
       >
@@ -206,7 +62,7 @@ export default function Todo({ todos, showNotification, todoBgColor }) {
               },
             }}
           >
-            <Grid item xs={12} md={8}>
+            <Grid>
               <Typography
                 variant="h5"
                 gutterBottom
@@ -227,9 +83,6 @@ export default function Todo({ todos, showNotification, todoBgColor }) {
               </Typography>
             </Grid>
             <Grid
-              item
-              xs={12}
-              md={4}
               sx={{
                 display: "flex",
                 alignItems: "center",
