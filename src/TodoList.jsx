@@ -2,7 +2,7 @@ import Container from "@mui/material/Container";
 import Card from "@mui/material/Card";
 import CardContent from "@mui/material/CardContent";
 import Typography from "@mui/material/Typography";
-import { Box, Divider, Grid, Input } from "@mui/material";
+import { Box, Divider, Grid } from "@mui/material";
 // toggle button
 import ToggleButton from "@mui/material/ToggleButton";
 import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
@@ -10,10 +10,9 @@ import ToggleButtonGroup from "@mui/material/ToggleButtonGroup";
 import Todo from "./Todo";
 import Button from "@mui/material/Button";
 import TextField from "@mui/material/TextField";
-import { useState,  useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import NoteAltIcon from "@mui/icons-material/NoteAlt";
 import UpButton from "./upButton";
-import Notification from "./notifications";
 import { Drawer, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 // alert popup
@@ -25,78 +24,41 @@ import DialogTitle from "@mui/material/DialogTitle";
 import { useTodo } from "./context/TodoContext";
 // alert popup
 export default function TodoList() {
-  const [yourname, setyourname] = useState(() => {
-    // Loads from storage, defaults to "Guest" if nothing is saved or the saved value is empty
-    const savedName = localStorage.getItem("myname");
-    return savedName || "Guest";
-  });
-  // The input field starts with the currently displayed name
-  const [inputName, setInputName] = useState(yourname);
+  const {
+    todo,
+    dispatch,
+    showNotification,
+    yourname,
+    setyourname,
+    selectedColor,
+    setSelectedColor,
+  } = useTodo();
   const [displayTodoType, setDisplayTodoType] = useState("all");
   const [taskInput, setTaskInput] = useState("");
   const [detailsInput, setdetailsInput] = useState("");
-  // const { todo1, setTodo } = useContext(TodoContext);
-  // const [todo, dispatch] = useReducer(Reducer, []);
-  const {todo, dispatch} = useTodo();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [subjectInput, setSubjectInput] = useState("");
   const [messageInput, setMessageInput] = useState("");
-  const [selectedColor, setSelectedColor] = useState(() => {
-    const savedColor = localStorage.getItem("todoBgColor");
-    return savedColor || "#afafafff";
-  });
+
   const toggleDrawer = (newOpen) => () => {
     setIsMenuOpen(newOpen);
   };
-  useEffect(() => {
-    dispatch({
-      type: "getfromlocalstorage",
-    });
-    
-    const savedColor = localStorage.getItem("todoBgColor");
-    if (savedColor) {
-      setSelectedColor(savedColor);
-    }
-  }, []);
-  useEffect(() => {
-    // ✅ Always save the current state of 'yourname'
-    localStorage.setItem("myname", yourname);
-  }, [yourname]);
-  useEffect(() => {
-    localStorage.setItem("todoBgColor", selectedColor);
-  }, [selectedColor]);
-  const handleSaveName = () => {
-    const trimmedName = inputName.trim();
+const [draftName, setDraftName] = useState(yourname); 
+// useEffect(() => {
+//   setDraftName(yourname);
+// }, [yourname]);
 
-    if (trimmedName) {
-      // Set the display name to the trimmed value
-      setyourname(trimmedName);
-      showNotification("success", `Name updated to: ${trimmedName}`);
-    } else {
-      // If the input is empty or just spaces, set the display name to "Guest"
-      setyourname("Guest");
-      // Also ensure the input field is clear for visual confirmation
-      setInputName("");
-      showNotification("info", "Your name has been reset to Guest.");
-    }
-    // The useEffect in Step 2 will now save "Guest" or the new name.
-  };
-  // added notification +++++++++++++++++
+const handleSaveName = () => {
+  const trimmedName = draftName.trim(); 
+  if (trimmedName) {
+    setyourname(trimmedName); 
+    showNotification("success", `Name updated to: ${trimmedName}`);
+  } else {
+    setyourname("Guest"); 
+    showNotification("warning", "Your name has been reset to Guest.");
+  }
+};
 
-  const [notification, setNotification] = useState({
-    open: false,
-    severity: "success",
-    message: "",
-  });
-
-  const showNotification = (severity, message) => {
-    setNotification({ open: true, severity, message });
-  };
-
-  const handleCloseNotification = () => {
-    setNotification({ ...notification, open: false });
-  };
-  // added notification +++++++++++++++++
   // todo filtering::::::::::::::::::::::
 
   const completedTodo = useMemo(() => {
@@ -133,8 +95,6 @@ export default function TodoList() {
       <Todo
         key={t.id}
         todos={t}
-        showNotification={showNotification}
-        todoBgColor={selectedColor}
         HandleDeleteOpen={HandleDeleteOpen}
         HandleEditOpen={HandleEditOpen}
       />
@@ -270,7 +230,7 @@ export default function TodoList() {
             "&:hover": { backgroundColor: "#2469c3ff" },
             border:
               selectedColor === "#2469c3ff"
-                ? "3px solid #b71fb4ff"
+                ? "3px solid #d85818ff"
                 : "1px solid #ccc",
             p: 0,
             borderRadius: "50%",
@@ -289,7 +249,7 @@ export default function TodoList() {
             "&:hover": { backgroundColor: "#4d724dff" },
             border:
               selectedColor === "#4d724dff"
-                ? "3px solid #b71fb4ff"
+                ? "3px solid #d85818ff"
                 : "1px solid #ccc",
             p: 0,
             borderRadius: "50%",
@@ -308,7 +268,7 @@ export default function TodoList() {
             "&:hover": { backgroundColor: "#5f5f89ff" },
             border:
               selectedColor === "#5f5f89ff"
-                ? "3px solid #b71fb4ff"
+                ? "3px solid #d85818ff"
                 : "1px solid #ccc",
             p: 0,
             borderRadius: "50%",
@@ -316,17 +276,17 @@ export default function TodoList() {
         />
         {/* darkBlue Button */}
         <Button
-          onClick={() => setSelectedColor("#16161dff")}
+          onClick={() => setSelectedColor("#242424ff")}
           variant="contained"
           sx={{
             minWidth: 0,
             width: "1.5rem",
             height: "1.5rem",
-            backgroundColor: "#16161dff",
-            "&:hover": { backgroundColor: "#16161dff" },
+            backgroundColor: "#242424ff",
+            "&:hover": { backgroundColor: "#242424ff" },
             border:
-              selectedColor === "#16161dff"
-                ? "3px solid #b71fb4ff"
+              selectedColor === "#242424ff"
+                ? "3px solid #d85818ff"
                 : "1px solid #ccc",
             p: 0,
             borderRadius: "50%",
@@ -539,8 +499,8 @@ export default function TodoList() {
                       placeholder="Type your name…"
                       variant="outlined"
                       size="small"
-                      value={inputName ?? ""}
-                      onChange={(e) => setInputName(e.target.value)}
+                      value={draftName ?? ""}
+                      onChange={(e) => setDraftName(e.target.value)}
                       fullWidth
                       sx={{
                         "& .MuiInputBase-input": { textAlign: "center" },
@@ -564,15 +524,6 @@ export default function TodoList() {
             </Drawer>
           </div>
           {/* slide menu ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ */}
-          {/* added notification  ++++++++++++++++++++++++++++++++++ */}
-          <Notification
-            open={notification.open}
-            onClose={handleCloseNotification}
-            severity={notification.severity}
-            message={notification.message}
-          />
-
-          {/* added notification  ++++++++++++++++++++++++++++++++++ */}
           <Card sx={{ backgroundColor: "#0f50f615" }}>
             <Grid
               // container
@@ -586,7 +537,7 @@ export default function TodoList() {
               }}
             >
               <Grid>
-                <p>Welcome, {inputName}</p>
+                <p>Welcome, {yourname}</p>
               </Grid>
             </Grid>
           </Card>

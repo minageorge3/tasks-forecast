@@ -10,12 +10,10 @@ export default function Reducer(currentTodo, action) {
         isCompleted: false,
       };
       const theUpdatedTodo = [...currentTodo, newTodo];
-      localStorage.setItem("todos", JSON.stringify(theUpdatedTodo));
       return theUpdatedTodo;
     }
     case "deleted": {
       const filterdTodo = currentTodo.filter((t) => t.id !== action.payload.id);
-      localStorage.setItem("todos", JSON.stringify(filterdTodo));
       return filterdTodo;
     }
     case "edited": {
@@ -30,34 +28,18 @@ export default function Reducer(currentTodo, action) {
           return t;
         }
       });
-      localStorage.setItem("todos", JSON.stringify(editedTodo));
       return editedTodo;
     }
     case "done": {
-      let completedStatus = false; //1
       const updatedTodo = currentTodo.map((t) => {
         if (t.id === action.payload.id) {
-          // t.isCompleted = !t.isCompleted;
-          completedStatus = !t.isCompleted; //2
           return { ...t, isCompleted: !t.isCompleted };
         } else {
           return t;
         }
       });
-      localStorage.setItem("todos", JSON.stringify(updatedTodo));
-      if (completedStatus) {
-        action.payload.showNotification("success", "Task marked as done! 🎉");
-      } else {
-        action.payload.showNotification("info", "Task  moved to pending. 🖊️");
-      }
       return updatedTodo;
     }
-
-    case "getfromlocalstorage": {
-      const storageTodos = JSON.parse(localStorage.getItem("todos")) || [];
-      return storageTodos;
-    }
-
     default: {
       throw Error("wrong action " + action.type);
     }

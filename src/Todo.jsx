@@ -10,17 +10,19 @@ import { useTodo } from "./context/TodoContext";
 
 export default function Todo({
   todos,
-  showNotification,
-  todoBgColor,
   HandleDeleteOpen,
   HandleEditOpen,
 }) {
-  const { todo, dispatch } = useTodo();
+  const { dispatch, showNotification, selectedColor } = useTodo();
 
   // event handlers functions++++++++++
   function handleCheck() {
-    dispatch({ type: "done", payload: { id: todos.id, showNotification } });
-    
+    dispatch({ type: "done", payload: { id: todos.id } });
+    const savedTodo = todos.isCompleted
+      ? "Task  moved to pending. 🖊️"
+      : "Task marked as done! 🎉";
+    const newSeverity = todos.isCompleted ? "info" : "success";
+    showNotification(newSeverity, savedTodo);
   }
   // Delete functions <><><><><><><><><>
   function handleDeleteOpen() {
@@ -44,7 +46,7 @@ export default function Todo({
           margin: ".5rem",
           borderRadius: ".5rem",
           boxShadow: "0 0 5px #13a6eaff",
-          backgroundColor: todos.isCompleted ? "#000000ff" : todoBgColor,
+          backgroundColor: todos.isCompleted ? "#9b9b9bff" : selectedColor,
           opacity: todos.isCompleted ? 0.8 : 1,
         }}
       >
