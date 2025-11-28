@@ -14,10 +14,8 @@ import WindPowerIcon from "@mui/icons-material/WindPower";
 import WaterDropIcon from "@mui/icons-material/WaterDrop";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-// NOTE: Please replace this placeholder with your actual OpenWeatherMap API Key
-// NOTE: For security in a real application, this should be stored in an environment variable.
-const API_KEY = "bb1177aa2f6274431cfbf6c4ef2013dd";
-const DEFAULT_CITY = "London"; // Starting city for the initial load
+const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
+const DEFAULT_CITY = "Kafr ad Dawwār"; 
 
 export default function Weather() {
   const [weather, setWeather] = useState(null);
@@ -70,10 +68,6 @@ export default function Weather() {
     if (city.trim()) {
       const source = axios.CancelToken.source();
       fetchWeather(city.trim(), source.token);
-      // Note: We are not implementing the cleanup in this handler
-      // because we only fetch once per click. The component-wide
-      // cleanup is still in the main useEffect.
-      // For simplicity, we skip complex request management on button clicks here.
       setCity("");
     }
   };
@@ -351,13 +345,6 @@ export default function Weather() {
           </Box>
         </CardContent>
       </Card>
-      <Button
-        color="secondary"
-        variant="text"
-        style={{ display: "flex", justifyContent: "start", width: "100%" }}
-      >
-        Arabic
-      </Button>
     </Container>
   );
 }
