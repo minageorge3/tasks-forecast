@@ -15,7 +15,7 @@ import WaterDropIcon from "@mui/icons-material/WaterDrop";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
 const API_KEY = import.meta.env.VITE_WEATHER_API_KEY;
-const DEFAULT_CITY = "Kafr ad Dawwār"; 
+const DEFAULT_CITY = "Kafr ad Dawwār";
 
 export default function Weather() {
   const [weather, setWeather] = useState(null);
@@ -109,12 +109,12 @@ export default function Weather() {
                 mb: "1rem",
                 display: "flex",
                 justifyContent: "space-between",
-                alignItems: "flex-end", // Align text field and button nicely
+                alignItems: "flex-end",
               }}
             >
               <TextField
                 sx={{
-                  ml: ".5rem",
+                  margin: "0 .5rem 0.2rem .2rem",
                   outline: "none",
                   border: "none",
                   width: "100%",
@@ -123,14 +123,19 @@ export default function Weather() {
                 label="City Name"
                 variant="standard"
                 value={city}
-                onChange={(e) => setCity(e.target.value)} // Capture input
-                onKeyDown={handleKeyPress} // Enable search on Enter key
+                onChange={(e) => setCity(e.target.value)}
+                onKeyDown={handleKeyPress}
               />
               <Button
-                sx={{ outline: "none", border: "none", height: "36px" }}
+                sx={{
+                  outline: "none",
+                  border: "none",
+                  height: "36px",
+                  margin: "0 .2rem .2rem 0",
+                }}
                 variant="outlined"
-                onClick={handleSearch} // Trigger search on click
-                disabled={!city.trim()} // Disable button if input is empty
+                onClick={handleSearch}
+                disabled={!city.trim()}
               >
                 Search
               </Button>
@@ -155,10 +160,7 @@ export default function Weather() {
               }}
             >
               <Grid item xs={12} sm={6}>
-                <Typography
-                  variant="h6"
-                  color="primary"                
-                >
+                <Typography variant="h6" color="primary">
                   {/* Display the name of the city that was successfully searched */}
                   {weather ? weather.name : currentCity}
                 </Typography>
@@ -191,12 +193,12 @@ export default function Weather() {
                 >
                   <Grid>
                     <Grid item xs={12} sm={6}>
-                      <Typography variant="h4" color="primary"  >
+                      <Typography variant="h4" color="primary">
                         {weather ? Math.round(weather.main.temp) : 0} °C
                       </Typography>
                     </Grid>
                     <Grid item xs={12} sm={6}>
-                      <Typography variant="h6" >
+                      <Typography variant="h6">
                         {weather ? weather.weather[0].description : ""}
                       </Typography>
                     </Grid>
