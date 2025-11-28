@@ -13,6 +13,7 @@ const savedLocalStorage = () => {
   const savedTodo = localStorage.getItem("savedTodo");
   return savedTodo ? JSON.parse(savedTodo) : [];
 };
+// >>>
 export default function TodoProvider({ children }) {
   const [todo, dispatch] = useReducer(Reducer, [], savedLocalStorage);
 

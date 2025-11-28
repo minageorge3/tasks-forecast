@@ -22,6 +22,8 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useTodo } from "./context/TodoContext";
+import Weather from "./weather";
+import LinearDotLoading from "./movingBar";
 // alert popup
 export default function TodoList() {
   const {
@@ -43,21 +45,21 @@ export default function TodoList() {
   const toggleDrawer = (newOpen) => () => {
     setIsMenuOpen(newOpen);
   };
-const [draftName, setDraftName] = useState(yourname); 
-// useEffect(() => {
-//   setDraftName(yourname);
-// }, [yourname]);
+  const [draftName, setDraftName] = useState(yourname);
+  // useEffect(() => {
+  //   setDraftName(yourname);
+  // }, [yourname]);
 
-const handleSaveName = () => {
-  const trimmedName = draftName.trim(); 
-  if (trimmedName) {
-    setyourname(trimmedName); 
-    showNotification("success", `Name updated to: ${trimmedName}`);
-  } else {
-    setyourname("Guest"); 
-    showNotification("warning", "Your name has been reset to Guest.");
-  }
-};
+  const handleSaveName = () => {
+    const trimmedName = draftName.trim();
+    if (trimmedName) {
+      setyourname(trimmedName);
+      showNotification("success", `Name updated to: ${trimmedName}`);
+    } else {
+      setyourname("Guest");
+      showNotification("warning", "Your name has been reset to Guest.");
+    }
+  };
 
   // todo filtering::::::::::::::::::::::
 
@@ -255,7 +257,6 @@ const handleSaveName = () => {
             borderRadius: "50%",
           }}
         />
-
         {/* Blue Button */}
         <Button
           onClick={() => setSelectedColor("#5f5f89ff")}
@@ -293,6 +294,9 @@ const handleSaveName = () => {
           }}
         />
       </Box>
+      {/* weather app <><><><><><><><><><><><><><><><CCCFFFFCCCC */}
+      {/* weather app <><><><><><><><><><><><><><><><CCCFFFFCCCC */}
+      <Weather />
       {/* choose a color ????????????????????????????????????????? */}
       <Box
         sx={{
@@ -451,7 +455,8 @@ const handleSaveName = () => {
               color="secondary"
               sx={{ m: 2, margin: ".5rem" }}
             >
-              Open Menu
+              My Menu
+              <LinearDotLoading/>
             </Button>
             {/*  Drawer component */}
             <Drawer
@@ -473,7 +478,7 @@ const handleSaveName = () => {
                 sx={{
                   backgroundColor: "#1a72de1a",
                   p: 1,
-                  minHeight: { xs: "110px", md: "auto" },
+                  minHeight: { xs: "110px", md: "40px" },
                 }}
               >
                 <Grid
