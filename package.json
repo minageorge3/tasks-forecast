@@ -1,6 +1,7 @@
 {
-  "name": "todo-list",
-  "homepage": "https://minageorge3.github.io/todolist",
+  "name": "tasks-forecast",
+  "homepage": "https://minageorge3.github.io/tasks-forecast",
+  "description": "A combined To-Do List and Weather Forecast application built with React.",
   "private": true,
   "version": "0.0.0",
   "type": "module",
